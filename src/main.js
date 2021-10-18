@@ -1,15 +1,27 @@
 import * as Engine from "./gameEngine";
-import {Text} from "./gui";
+import {mainMenu} from "./mainMenu";
 
-let screen = new Engine.screen();
-let graphics = new Engine.graphics(screen);
+window.onload = () => {
 
-let menuText = new Text(10, 100, "Penis? More like PEEN SUS!!", 100, null, "Blue");
+  let screen = new Engine.Screen();
+  let graphics = new Engine.Graphics(screen);
+  let keyboard = new Engine.Keyboard();
+  let mouse = new Engine.Mouse();
 
-screen.add();
+  // 0 = main menu
+  // 1 = game state
+  let state = 0;
 
-Engine.run(()=>{
-  graphics.fillBackground("black");
-  graphics.setColor("white");
-  menuText.render(graphics);
-})
+  screen.add();
+
+  Engine.run(()=>{
+
+    switch(state) {
+      case 0:
+        mainMenu.mainPage(graphics);
+        break;
+    }
+
+  })
+
+}

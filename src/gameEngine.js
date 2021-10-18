@@ -1,5 +1,5 @@
 // screen class
-export class screen {
+export class Screen {
   // initialization
   constructor() {
     // create a canvas element
@@ -51,7 +51,7 @@ export class screen {
 }
 
 // graphics class used to draw to the screen
-export class graphics {
+export class Graphics {
   // initialization
   constructor(screen) {
     this.screen = screen;
@@ -80,7 +80,7 @@ export class graphics {
   }
   // clear the entire screen
   clearScreen() {
-    this.clearRect(0, 0, this.screen.getWidth(), this.screen.getHeight());
+    this.clear(0, 0, this.screen.getWidth(), this.screen.getHeight());
   }
   // draw the background
   fillBackground(color) {
@@ -108,10 +108,12 @@ export class graphics {
     this.beginPath();
     this.context.arc(x, y, radius, 0, 2 * Math.PI);
     this.stroke();
+    this.fill();
   }
   // draw a point
   point(x, y, radius) {
     this.circle(x, y, radius);
+    this.context.fill();
   }
   // draw a line
   line(...args) {
@@ -141,6 +143,10 @@ export class graphics {
       default:
         console.log("hello");
     }
+  }
+  // set the size of the line
+  setLineSize(size) {
+    this.context.lineWidth = size;
   }
   // fill the drawing
   fill(region) {
@@ -175,7 +181,7 @@ export class graphics {
     }
   }
   // draw text
-  text(x, y, text, size, color, font) {
+  text(x = 0, y = 0, text = "", size = 10, color = "White", font = "Arial") {
     this.saveContext();
     this.setColor(color);
     this.context.font = `${size}px ${font}`;
@@ -186,11 +192,131 @@ export class graphics {
   measureText(text) {
     return this.context.measureText(text);
   }
+  // set the alignment of the text
+  alignText(alignment) {
+    this.context.textAlign = alignment;
+  }
+  // set the font
+  setFont(font) {
+    this.context.font = font;
+  }
+}
+
+// keyboard class used to get keyboard input
+export class Keyboard {
+  constructor() {
+    this.keys = [];
+    document.addEventListener("keydown", e => {
+      if (typeof this.keys[e.key.charCodeAt(0)] !== "object") {
+        this.keys[e.key.charCodeAt(0)] = new Key(e.key.charCodeAt(0));
+        this.keys[e.key.charCodeAt(0)].action.press();
+      } else {
+        this.keys[e.key.charCodeAt(0)].pressed = true;
+        this.keys[e.key.charCodeAt(0)].released = false;
+        this.keys[e.key.charCodeAt(0)].presses++;
+        this.keys[e.key.charCodeAt(0)].action.press();
+      }
+    });
+    document.addEventListener("keyup", e => {
+      if (typeof this.keys[e.key.charCodeAt(0)] !== "object") {
+        this.keys[e.key.charCodeAt(0)] = new Key(e.key.charCodeAt(0));
+        this.keys[e.key.charCodeAt(0)].action.release();
+      } else {
+        this.keys[e.key.charCodeAt(0)].pressed = false;
+        this.keys[e.key.charCodeAt(0)].released = true;
+        this.keys[e.key.charCodeAt(0)].releasses++;
+        this.keys[e.key.charCodeAt(0)].action.release();
+      }
+    });
+  }
+
+  onPress(character, func) {
+    if (typeof this.keys[character.charCodeAt(0)] !== "object") {
+      this.keys[character.charCodeAt(0)] = new Key(character.charCodeAt(0));
+    }
+    this.keys[character.charCodeAt(0)].onPress(func);
+  }
+
+  onRelease(character, func) {
+    if (typeof this.keys[character.charCodeAt(0)] !== "object") {
+      this.keys[character.charCodeAt(0)] = new Key(character.charCodeAt(0));
+    }
+    this.keys[character.charCodeAt(0)].onRelease(func);
+  }
+}
+
+// key class used for managing Key presses
+export class Key {
+  constructor(charCode = 0) {
+    this.pressed = true;
+    this.released = false;
+    this.presses = 1;
+    this.releases = 0;
+    this.action = {
+      press:function() {},
+      release:function() {}
+    };
+    this.charCode = charCode;
+  }
+  onPress(func = () => {}) {
+    this.action.press = func;
+  }
+  onRelease(func = () => {}) {
+    this.action.release = func;
+  }
+}
+
+// mouse class used for getting mouse input
+export class Mouse {
+  constructor() {
+    this.x = 0;
+    this.y = 0;
+    this.action = {
+      onMove:function(){},
+      onClick:function(){},
+      onMouseDown:function(){},
+      onMouseUp:function(){},
+      onMouseDrag:function(){}
+    };
+    document.addEventListener("mousemove", e => {
+      this.x = e.clientX;
+      this.y = e.clientY;
+      this.action.onMove();
+    });
+    document.addEventListener("click", e => {
+      this.action.onClick();
+    });
+    document.addEventListener("mousedown", e => {
+      this.action.onMouseDown();
+    });
+    document.addEventListener("mouseup", e => {
+      this.action.onMouseUp();
+    });
+    document.addEventListener("drag", e => {
+      this.action.onMouseDrag();
+    });
+  }
+  onMove(func) {
+    this.action.onMove = func;
+  }
+  onClick(func) {
+    this.action.onClick = func;
+  }
+  onMouseDown(func) {
+    this.action.onMouseDown = func;
+  }
+  onMouseUp(func) {
+    this.action.onMouseUp = func;
+  }
+  onMouseDrag(func) {
+    this.action.onMouseDrag = func;
+  }
 }
 
 export function run(func) {
   let lastTime = 0;
   let timer = 0;
+  let fps = 0;
   function loop(timeStamp) {
     const deltaTime = timeStamp - lastTime;
     lastTime = timeStamp;
