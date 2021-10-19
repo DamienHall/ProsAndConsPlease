@@ -291,7 +291,6 @@ var Graphics = /*#__PURE__*/function () {
       this.beginPath();
       this.context.arc(x, y, radius, 0, 2 * Math.PI);
       this.stroke();
-      this.fill();
     } // draw a point
 
   }, {
@@ -419,6 +418,12 @@ var Graphics = /*#__PURE__*/function () {
     key: "setFont",
     value: function setFont(font) {
       this.context.font = font;
+    } // get function to get the context of canvas
+
+  }, {
+    key: "getContext",
+    value: function getContext() {
+      return this.context;
     }
   }]);
 
@@ -438,28 +443,24 @@ var Keyboard = /*#__PURE__*/function () {
     document.addEventListener("keydown", function (e) {
       if (_typeof(_this3.keys[e.key.charCodeAt(0)]) !== "object") {
         _this3.keys[e.key.charCodeAt(0)] = new Key(e.key.charCodeAt(0));
-
-        _this3.keys[e.key.charCodeAt(0)].action.press();
-      } else {
-        _this3.keys[e.key.charCodeAt(0)].pressed = true;
-        _this3.keys[e.key.charCodeAt(0)].released = false;
-        _this3.keys[e.key.charCodeAt(0)].presses++;
-
-        _this3.keys[e.key.charCodeAt(0)].action.press();
       }
+
+      _this3.keys[e.key.charCodeAt(0)].pressed = true;
+      _this3.keys[e.key.charCodeAt(0)].released = false;
+      _this3.keys[e.key.charCodeAt(0)].presses++;
+
+      _this3.keys[e.key.charCodeAt(0)].action.press();
     });
     document.addEventListener("keyup", function (e) {
       if (_typeof(_this3.keys[e.key.charCodeAt(0)]) !== "object") {
         _this3.keys[e.key.charCodeAt(0)] = new Key(e.key.charCodeAt(0));
-
-        _this3.keys[e.key.charCodeAt(0)].action.release();
-      } else {
-        _this3.keys[e.key.charCodeAt(0)].pressed = false;
-        _this3.keys[e.key.charCodeAt(0)].released = true;
-        _this3.keys[e.key.charCodeAt(0)].releasses++;
-
-        _this3.keys[e.key.charCodeAt(0)].action.release();
       }
+
+      _this3.keys[e.key.charCodeAt(0)].pressed = false;
+      _this3.keys[e.key.charCodeAt(0)].released = true;
+      _this3.keys[e.key.charCodeAt(0)].releasses++;
+
+      _this3.keys[e.key.charCodeAt(0)].action.release();
     });
   }
 
@@ -495,9 +496,9 @@ var Key = /*#__PURE__*/function () {
 
     _classCallCheck(this, Key);
 
-    this.pressed = true;
+    this.pressed = false;
     this.released = false;
-    this.presses = 1;
+    this.presses = 0;
     this.releases = 0;
     this.action = {
       press: function press() {},
@@ -754,8 +755,9 @@ var _gui = require("./gui");
 
 var keyboard = new _gameEngine.Keyboard();
 var mouse = new _gameEngine.Mouse();
-var r = 100;
+var r = window.innerWidth / 2 + 100;
 var title = new _gui.Text(window.innerWidth / 2, window.innerHeight / 4, "Pros and Cons Please", 100);
+var subtitle = new _gui.Text(window.innerWidth / 2, window.innerHeight / 3, "By: Damien Hall", 50);
 var startButton = new _gui.Button(window.innerWidth / 2, window.innerHeight / 2, 300, 100, "Start");
 mouse.onClick(function () {
   var b = startButton.getBounds();
@@ -770,6 +772,7 @@ var mainMenu = {
     graphics.fillBackground("black");
     graphics.alignText("center");
     title.render(graphics);
+    subtitle.render(graphics);
     var b = startButton.getBounds();
 
     if (b[0] <= mouse.x && mouse.x <= b[2] && b[1] <= mouse.y && mouse.y <= b[3]) {
@@ -783,20 +786,69 @@ var mainMenu = {
     if (this.transition) {
       graphics.saveContext();
       graphics.setGCO("destination-in");
-      graphics.circle(window.innerWidth / 2, window.innerHeight / 2, r);
+      graphics.beginPath();
+      graphics.getContext().arc(window.innerWidth / 2, window.innerHeight / 2, r, 0, 2 * Math.PI);
       graphics.fill();
       graphics.restoreContext();
+      var a = r / 20;
+      r -= r - (a < 5 ? 5 : a) <= 0 ? 0 : a < 5 ? 5 : a;
+
+      if (r <= 5) {
+        this.transitionComplete = true;
+      }
     }
   },
-  transition: false
+  transition: false,
+  transitionComplete: false
 };
 exports.mainMenu = mainMenu;
+},{"./gameEngine":"src/gameEngine.js","./gui":"src/gui.js"}],"src/gameplay.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.gameplay = void 0;
+
+var _gameEngine = require("./gameEngine");
+
+var _gui = require("./gui");
+
+var keyboard = new _gameEngine.Keyboard();
+var mouse = new _gameEngine.Mouse();
+var r = window.innerWidth / 2 + 100;
+var gameplay = {
+  mainPage: function mainPage(graphics) {
+    graphics.clearScreen();
+    graphics.fillBackground("blue");
+
+    if (this.transition) {
+      graphics.saveContext();
+      graphics.setGCO("destination-in");
+      graphics.beginPath();
+      graphics.getContext().arc(window.innerWidth / 2, window.innerHeight / 2, r, 0, 2 * Math.PI);
+      graphics.fill();
+      graphics.restoreContext();
+      var a = r / 20;
+      r -= r - (a < 5 ? 5 : a) <= 0 ? 0 : a < 5 ? 5 : a;
+
+      if (r === 0) {
+        this.transitionComplete = true;
+      }
+    }
+  },
+  transition: false,
+  transitionComplete: false
+};
+exports.gameplay = gameplay;
 },{"./gameEngine":"src/gameEngine.js","./gui":"src/gui.js"}],"src/main.js":[function(require,module,exports) {
 "use strict";
 
 var Engine = _interopRequireWildcard(require("./gameEngine"));
 
 var _mainMenu = require("./mainMenu");
+
+var _gameplay = require("./gameplay");
 
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function (nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 
@@ -816,11 +868,20 @@ window.onload = function () {
       case 0:
         _mainMenu.mainMenu.mainPage(graphics);
 
+        if (_mainMenu.mainMenu.transitionComplete) {
+          state += 1;
+        }
+
+        break;
+
+      case 1:
+        _gameplay.gameplay.mainPage(graphics);
+
         break;
     }
   });
 };
-},{"./gameEngine":"src/gameEngine.js","./mainMenu":"src/mainMenu.js"}],"../../../../../usr/local/lib/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+},{"./gameEngine":"src/gameEngine.js","./mainMenu":"src/mainMenu.js","./gameplay":"src/gameplay.js"}],"../../../../../usr/local/lib/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 var OldModule = module.bundle.Module;
@@ -848,7 +909,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "38171" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "46819" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

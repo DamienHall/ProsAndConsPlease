@@ -1,5 +1,6 @@
 import * as Engine from "./gameEngine";
 import {mainMenu} from "./mainMenu";
+import {gameplay} from "./gameplay";
 
 window.onload = () => {
 
@@ -19,6 +20,12 @@ window.onload = () => {
     switch(state) {
       case 0:
         mainMenu.mainPage(graphics);
+        if (mainMenu.transitionComplete) {
+          state+=1;
+        }
+        break;
+      case 1:
+        gameplay.mainPage(graphics);
         break;
     }
 

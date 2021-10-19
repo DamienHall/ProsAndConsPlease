@@ -108,7 +108,6 @@ export class Graphics {
     this.beginPath();
     this.context.arc(x, y, radius, 0, 2 * Math.PI);
     this.stroke();
-    this.fill();
   }
   // draw a point
   point(x, y, radius) {
@@ -200,6 +199,10 @@ export class Graphics {
   setFont(font) {
     this.context.font = font;
   }
+  // get function to get the context of canvas
+  getContext() {
+    return this.context;
+  }
 }
 
 // keyboard class used to get keyboard input
@@ -209,24 +212,20 @@ export class Keyboard {
     document.addEventListener("keydown", e => {
       if (typeof this.keys[e.key.charCodeAt(0)] !== "object") {
         this.keys[e.key.charCodeAt(0)] = new Key(e.key.charCodeAt(0));
-        this.keys[e.key.charCodeAt(0)].action.press();
-      } else {
-        this.keys[e.key.charCodeAt(0)].pressed = true;
-        this.keys[e.key.charCodeAt(0)].released = false;
-        this.keys[e.key.charCodeAt(0)].presses++;
-        this.keys[e.key.charCodeAt(0)].action.press();
       }
+      this.keys[e.key.charCodeAt(0)].pressed = true;
+      this.keys[e.key.charCodeAt(0)].released = false;
+      this.keys[e.key.charCodeAt(0)].presses++;
+      this.keys[e.key.charCodeAt(0)].action.press();
     });
     document.addEventListener("keyup", e => {
       if (typeof this.keys[e.key.charCodeAt(0)] !== "object") {
         this.keys[e.key.charCodeAt(0)] = new Key(e.key.charCodeAt(0));
-        this.keys[e.key.charCodeAt(0)].action.release();
-      } else {
-        this.keys[e.key.charCodeAt(0)].pressed = false;
-        this.keys[e.key.charCodeAt(0)].released = true;
-        this.keys[e.key.charCodeAt(0)].releasses++;
-        this.keys[e.key.charCodeAt(0)].action.release();
       }
+      this.keys[e.key.charCodeAt(0)].pressed = false;
+      this.keys[e.key.charCodeAt(0)].released = true;
+      this.keys[e.key.charCodeAt(0)].releasses++;
+      this.keys[e.key.charCodeAt(0)].action.release();
     });
   }
 
@@ -248,9 +247,9 @@ export class Keyboard {
 // key class used for managing Key presses
 export class Key {
   constructor(charCode = 0) {
-    this.pressed = true;
+    this.pressed = false;
     this.released = false;
-    this.presses = 1;
+    this.presses = 0;
     this.releases = 0;
     this.action = {
       press:function() {},
